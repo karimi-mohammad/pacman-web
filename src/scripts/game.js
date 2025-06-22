@@ -1,7 +1,10 @@
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext('2d');
-const blockSize = "25";
+const blockSize = 25;
 const wallColor = "#331771";
+const FPS = 30;
+const FRAME_DURATION = 1000 / FPS; // مدت زمان هر فریم به میلی‌ثانیه
+let lastRender = 0;
 const drawRect = (x, y, width, height, color) => {
     ctx.fillStyle = color;
     ctx.strokeStyle = 'red';
@@ -31,21 +34,19 @@ const map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 ]
-// for (let i = 0; i < map.length; i++) {
-//     for (let j = 0; j < map[0].length; j++) {
-//         if (map[i][j] === 1) {//it is wall
-//             drawRect(j * blockSize, i * blockSize, blockSize, blockSize, wallColor)
-//         }
-//     }
-
-// }
 
 
-const pacman = new Pacman(100, 100, 32, 32, 2);
-function gameLoop() {
+const pacman = new Pacman(blockSize, blockSize, blockSize, blockSize, blockSize * 2.8);
+async function gameLoop(currentTime) {
+    requestAnimationFrame(gameLoop);
+
+    if (currentTime - lastRender < FRAME_DURATION) return;
+
+    const deltaTime = (currentTime - lastRender) / 1000; // به ثانیه
+    lastRender = currentTime;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // دوباره دیوارها رو بکش
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
             if (map[i][j] === 1) {
@@ -53,11 +54,10 @@ function gameLoop() {
             }
         }
     }
+
     pacman.draw(ctx);
-
-    requestAnimationFrame(gameLoop);
+    pacman.move(deltaTime);
 }
-document.addEventListener('DOMContentLoaded',()=>{
-    gameLoop();
-
-})
+document.addEventListener('DOMContentLoaded', () => {
+    requestAnimationFrame(gameLoop);
+});

@@ -42,9 +42,17 @@ class Pacman {
         );
     }
 
-    move() {
-        this.x += this.movePX;
+
+
+    move(deltaTime) {
+        const speed = this.movePX; // سرعت به پیکسل بر ثانیه
+        const moving = speed * deltaTime; // اینجا دیگه تقسیم بر 1000 نمی‌خواد
+        this.x = parseFloat(this.x) + moving;
+        // console.log(this.x);
+        
     }
+    
+
 }
 
 
