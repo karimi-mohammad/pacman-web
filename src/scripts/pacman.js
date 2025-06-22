@@ -1,35 +1,50 @@
 class Pacman {
     constructor(x, y, width, height, movePX) {
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
-        this.movePX = movePX
-    }
-    draw() {
-        // TODO : animate gif in canvas and change size img in canvas
-        // gifler Lib
-        
-        let img = new Image();
-        img.onload = function () {
-            ctx.drawImage(img, this.x, this.y); // رسم تصویر از نقطه (0,0)
-        };
-        img.src = "./src/images/Pacman.gif";
-        // img.height = this.height + "px !important"
-        img.style.width = "10px"
-        img.height = "20"
-        console.log("ok");
-        console.log(img);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.movePX = movePX;
 
+        this.image = new Image();
+        this.image.src = "./src/images/Pacman-sprite.png";
+
+        this.totalFrames = 4; // تعداد فریم‌ها
+        this.currentFrame = 0;
+        this.frameDuration = 100; // هر فریم چند میلی‌ثانیه نمایش داده شود
+        this.lastFrameChange = Date.now();
     }
+
+    updateFrame() {
+        const now = Date.now();
+        if (now - this.lastFrameChange > this.frameDuration) {
+            this.currentFrame = (this.currentFrame + 1) % this.totalFrames;
+            this.lastFrameChange = now;
+        }
+    }
+
+    draw(ctx) {
+        this.updateFrame();
+
+        const spriteWidth = this.image.width / this.totalFrames;
+        const spriteHeight = this.image.height;
+
+        ctx.drawImage(
+            this.image,
+            this.currentFrame * spriteWidth, // sx
+            0, // sy
+            spriteWidth, // sw
+            spriteHeight, // sh
+            this.x, // dx
+            this.y, // dy
+            this.width, // dw
+            this.height // dh
+        );
+    }
+
     move() {
-
-    }
-    changeDir() {
-
+        this.x += this.movePX;
     }
 }
 
-// create new
-const pacman = new Pacman(100, 100, blockSize, blockSize, blockSize / 2)
-pacman.draw()
+

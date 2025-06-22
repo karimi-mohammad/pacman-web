@@ -31,11 +31,33 @@ const map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 
 ]
-for (let i = 0; i < map.length; i++) {
-    for (let j = 0; j < map[0].length; j++) {
-        if (map[i][j] === 1) {//it is wall
-            drawRect(j * blockSize, i * blockSize, blockSize, blockSize, wallColor)
+// for (let i = 0; i < map.length; i++) {
+//     for (let j = 0; j < map[0].length; j++) {
+//         if (map[i][j] === 1) {//it is wall
+//             drawRect(j * blockSize, i * blockSize, blockSize, blockSize, wallColor)
+//         }
+//     }
+
+// }
+
+
+const pacman = new Pacman(100, 100, 32, 32, 2);
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // دوباره دیوارها رو بکش
+    for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[0].length; j++) {
+            if (map[i][j] === 1) {
+                drawRect(j * blockSize, i * blockSize, blockSize, blockSize, wallColor);
+            }
         }
     }
+    pacman.draw(ctx);
 
+    requestAnimationFrame(gameLoop);
 }
+document.addEventListener('DOMContentLoaded',()=>{
+    gameLoop();
+
+})
