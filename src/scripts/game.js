@@ -5,6 +5,7 @@ const wallColor = "#331771";
 const FPS = 30;
 const FRAME_DURATION = 1000 / FPS; // مدت زمان هر فریم به میلی‌ثانیه
 let lastRender = 0;
+
 const drawRect = (x, y, width, height, color) => {
     ctx.fillStyle = color;
     ctx.strokeStyle = 'red';
@@ -36,13 +37,13 @@ const map = [
 ]
 
 
-const pacman = new Pacman(blockSize, blockSize, blockSize, blockSize, blockSize * 2.8);
+const pacman = new Pacman(blockSize, blockSize, blockSize, blockSize, blockSize * 2.8, blockSize,map);
 async function gameLoop(currentTime) {
     requestAnimationFrame(gameLoop);
 
     if (currentTime - lastRender < FRAME_DURATION) return;
 
-    const deltaTime = (currentTime - lastRender) / 1000; // به ثانیه
+    const deltaTime = Math.min((currentTime - lastRender) / 1000, 0.05); // حداکثر 0.05 ثانیه
     lastRender = currentTime;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);

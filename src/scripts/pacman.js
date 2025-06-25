@@ -1,11 +1,12 @@
 class Pacman {
-    constructor(x, y, width, height, movePX) {
+    constructor(x, y, width, height, movePX, blockSize, map) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.movePX = movePX;
-
+        this.blockSize = blockSize
+        this.map = map
         this.image = new Image();
         this.image.src = "./src/images/Pacman-sprite.png";
 
@@ -45,13 +46,44 @@ class Pacman {
 
 
     move(deltaTime) {
-        const speed = this.movePX; // سرعت به پیکسل بر ثانیه
-        const moving = speed * deltaTime; // اینجا دیگه تقسیم بر 1000 نمی‌خواد
-        this.x = parseFloat(this.x) + moving;
-        // console.log(this.x);
-        
+        const speed = this.movePX;
+        const moving = speed * deltaTime;
+
+        const moveX = moving;
+        const moveY = 0; 
+
+        if (this.checkIfCanMove(moveX, moveY)) {
+            this.x += moveX;
+        } else {
+            console.log("برخورد با دیوار");
+        }
     }
     
+
+    checkIfCanMove(moveX, moveY) {
+        const nextX = this.x + moveX;
+        const nextY = this.y + moveY;
+
+        const left = nextX;
+        const right = nextX + this.width - 1;
+        const top = nextY;
+        const bottom = nextY + this.height - 1;
+
+        const topLeft = this.map[Math.floor(top / this.blockSize)]?.[Math.floor(left / this.blockSize)];
+        const topRight = this.map[Math.floor(top / this.blockSize)]?.[Math.floor(right / this.blockSize)];
+        const bottomLeft = this.map[Math.floor(bottom / this.blockSize)]?.[Math.floor(left / this.blockSize)];
+        const bottomRight = this.map[Math.floor(bottom / this.blockSize)]?.[Math.floor(right / this.blockSize)];
+
+        return (
+            topLeft !== 1 &&
+            topRight !== 1 &&
+            bottomLeft !== 1 &&
+            bottomRight !== 1
+        );
+    }
+    
+    
+
 
 }
 
