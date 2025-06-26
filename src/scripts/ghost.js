@@ -26,8 +26,14 @@ class Ghost {
         this.target = randomTargetsForGhosts[this.randomTargetIndex];
         setInterval(() => {
             this.changeRandomDirection();
-        }, 4000);
+        }, 6000);
+        this.stuckCounter = 0;
+
     }
+    isCentered() {
+        return this.x % oneBlockSize === 0 && this.y % oneBlockSize === 0;
+    }
+
 
     isInRange() {
         let xDistance = Math.abs(pacman.getMapX() - this.getMapX());
@@ -47,17 +53,57 @@ class Ghost {
         this.randomTargetIndex = this.randomTargetIndex % 4;
     }
 
+
     moveProcess() {
+        let oldX = this.x;
+        let oldY = this.y;
+
         if (this.isInRange()) {
             this.target = pacman;
         } else {
             this.target = randomTargetsForGhosts[this.randomTargetIndex];
         }
-        this.changeDirectionIfPossible();
+
+        if (this.isCentered()) {
+            this.changeDirectionIfPossible();
+        }
+
+        this.moveForwards();
+
+        if (this.checkCollisions()) {
+            this.moveBackwards();
+            this.stuckCounter++;
+            if (this.stuckCounter > 10) {
+                this.changeRandomDirection(); // جهت رو عوض کن شاید آزاد شد
+                this.stuckCounter = 0;
+            }
+        } else {
+            this.stuckCounter = 0;
+        }
+    }
+
+
+    changeDirectionIfPossible() {
+        if (!this.isCentered()) return; // اگه وسط یه سلول نیست تغییر جهت نده
+
+        let tempDirection = this.direction;
+        this.direction = this.calculateNewDirection(
+            map,
+            parseInt(this.target.x / oneBlockSize),
+            parseInt(this.target.y / oneBlockSize)
+        );
+
+        if (typeof this.direction == "undefined") {
+            this.direction = tempDirection;
+            return;
+        }
+
         this.moveForwards();
         if (this.checkCollisions()) {
             this.moveBackwards();
-            return;
+            this.direction = tempDirection;
+        } else {
+            this.moveBackwards();
         }
     }
 
@@ -226,14 +272,12 @@ class Ghost {
     }
 
     getMapX() {
-        let mapX = parseInt(this.x / oneBlockSize);
-        return mapX;
+        return Math.floor(this.x / oneBlockSize);
+    }
+    getMapY() {
+        return Math.floor(this.y / oneBlockSize);
     }
 
-    getMapY() {
-        let mapY = parseInt(this.y / oneBlockSize);
-        return mapY;
-    }
 
     getMapXRightSide() {
         let mapX = parseInt((this.x * 0.99 + oneBlockSize) / oneBlockSize);
