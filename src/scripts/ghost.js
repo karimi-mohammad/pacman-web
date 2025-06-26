@@ -26,7 +26,7 @@ class Ghost {
         this.target = randomTargetsForGhosts[this.randomTargetIndex];
         setInterval(() => {
             this.changeRandomDirection();
-        }, 10000);
+        }, 4000);
     }
 
     isInRange() {
@@ -266,10 +266,10 @@ class Ghost {
         canvasContext.restore();
         canvasContext.beginPath();
         canvasContext.strokeStyle = "red";
-        const cheatCheckBox = document.getElementsByName('cheat')[0]
-    console.log("hereeeeeeeeeee");
-    
-        if (cheatCheckBox.checked) {
+        const showAiDistanceCheckBox = document.getElementsByName('showAiDistance')[0]
+        console.log("hereeeeeeeeeee");
+
+        if (showAiDistanceCheckBox.checked) {
             canvasContext.arc(
                 this.x + oneBlockSize / 2,
                 this.y + oneBlockSize / 2,

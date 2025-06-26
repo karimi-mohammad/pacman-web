@@ -260,7 +260,8 @@ let createGhosts = () => {
             ghostImageLocations[i % 4].y,
             124,
             116,
-            6 + i
+            // 6 + i
+            6
         );
         ghosts.push(newGhost);
     }
@@ -271,10 +272,14 @@ document.addEventListener('DOMContentLoaded', () => {
 )
 
 let startGame = () => {
+    document.getElementsByName("startGame")[0].remove()
     ghostCount = document.getElementsByName("ghosts")[0].value
     fps = document.getElementsByName("FPS")[0].value
     // Set game interval
-     gameInterval = setInterval(gameLoop, 1000 / fps);
+    gameInterval = setInterval(gameLoop, 1000 / fps);
+    if (document.getElementsByName("cheat")[0].checked) {
+        onGhostCollision = () => { }
+    }
     createNewPacman()
     createGhosts()
     gameLoop()
