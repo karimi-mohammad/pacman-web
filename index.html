@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پک‌من</title>
-    <link rel="stylesheet" href="./src/styles/_variables.css">
-    <link rel="stylesheet" href="./src/styles/style.css">
+    <title>Pacman</title>
 </head>
 
-<body>
-    <h1>بازی پک‌من</h1>
-    <canvas width="500" height="500" id="canvas"></canvas>
-    <div class="game-info">
-        <p>برای حرکت از کلیدهای جهت‌نما استفاده کنید.</p>
+<body style="margin: 0; background-color: black;">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div style="display:none;">
+        <img id="animation" src="animations.gif" width="140" height="20">
+        <img id="ghosts" src="ghost.png" width="140" height="20">
     </div>
+    <script src="./src/scripts/ghost.js"></script>
     <script src="./src/scripts/pacman.js"></script>
-    <script type="module" src="./src/scripts/game.js"></script>
+    <script src="./src/scripts/game.js"></script>
 </body>
 
 </html>

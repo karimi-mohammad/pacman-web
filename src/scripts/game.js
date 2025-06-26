@@ -1,96 +1,289 @@
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext('2d');
-const blockSize = 25;
-const wallColor = "#331771";
-const FPS = 30;
-const FRAME_DURATION = 1000 / FPS; // مدت زمان هر فریم به میلی‌ثانیه
-let lastRender = 0;
+// Get canvas and context
+const canvas = document.getElementById("canvas");
+const canvasContext = canvas.getContext("2d");
+const pacmanFrames = document.getElementById("animation");
+const ghostFrames = document.getElementById("ghosts");
 
+// Helper function to create rectangles on the canvas
+let createRect = (x, y, width, height, color) => {
+    canvasContext.fillStyle = color;
+    canvasContext.fillRect(x, y, width, height);
+};
 
+// Define directions
+const DIRECTION_RIGHT = 4;
+const DIRECTION_UP = 3;
+const DIRECTION_LEFT = 2;
+const DIRECTION_BOTTOM = 1;
+let lives = 3;
+let ghostCount = 1;
+let ghostImageLocations = [
+    { x: 0, y: 0 },
+    { x: 176, y: 0 },
+    { x: 0, y: 121 },
+    { x: 176, y: 121 },
+];
 
+// Game state variables
+// Game variables
+let fps = 30;
+let pacman;
+let oneBlockSize = 20;
+let score = 0;
+let ghosts = [];
+let wallSpaceWidth = oneBlockSize / 1.6;
+let wallOffset = (oneBlockSize - wallSpaceWidth) / 2;
+let wallInnerColor = "black";
 
-const drawRect = (x, y, width, height, color) => {
-    ctx.fillStyle = color;
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 1;
-    ctx.fillRect(x, y, width, height);
-    // ctx.strokeRect(x, y, width, height);
-}
-const map = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+// we now create the map of the walls,
+// if 1 wall, if 0 not wall
+// 21 columns // 23 rows
+let map = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+    [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
+    [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
+    [1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1],
+    [2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+    [1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+    [1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1],
+    [1, 1, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1],
+    [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
+    [1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
 
-]
+let randomTargetsForGhosts = [
+    { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
+    { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
+    { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
+    {
+        x: (map[0].length - 2) * oneBlockSize,
+        y: (map.length - 2) * oneBlockSize,
+    },
+];
 
+// for (let i = 0; i < map.length; i++) {
+//     for (let j = 0; j < map[0].length; j++) {
+//         map[i][j] = 2;
+//     }
+// }
 
-const pacman = new Pacman(blockSize, blockSize, blockSize, blockSize, blockSize * 2.8, blockSize,map);
-let direction = { x: 1, y: 0 }; // جهت فعلی
-let pendingDirection = { x: 1, y: 0 }; // جهت درخواستی
+let createNewPacman = () => {
+    pacman = new Pacman(
+        oneBlockSize,
+        oneBlockSize,
+        oneBlockSize,
+        oneBlockSize,
+        oneBlockSize / 5
+    );
+};
 
-document.addEventListener("keydown", (e) => {
-    switch (e.key) {
-        case "ArrowUp":
-            pendingDirection = { x: 0, y: -1 };
-            break;
-        case "ArrowDown":
-            pendingDirection = { x: 0, y: 1 };
-            break;
-        case "ArrowLeft":
-            pendingDirection = { x: -1, y: 0 };
-            break;
-        case "ArrowRight":
-            pendingDirection = { x: 1, y: 0 };
-            break;
+// Main game loop
+let gameLoop = () => {
+    update();
+    draw();
+};
+
+// Set game interval
+let gameInterval = setInterval(gameLoop, 1000 / fps);
+
+// Restart Pacman and ghosts after collision or death
+let restartPacmanAndGhosts = () => {
+    createNewPacman();
+    createGhosts();
+};
+
+// Handle ghost collision
+let onGhostCollision = () => {
+    lives--;
+    restartPacmanAndGhosts();
+    if (lives == 0) {
     }
-});
+};
 
-async function gameLoop(currentTime) {
-    requestAnimationFrame(gameLoop);
+// Update game state (move characters, check collisions)
+let update = () => {
+    pacman.moveProcess();
+    pacman.eat();
+    updateGhosts();
+    if (pacman.checkGhostCollision(ghosts)) {
+        onGhostCollision();
+    }
+};
 
-    if (currentTime - lastRender < FRAME_DURATION) return;
-
-    const deltaTime = Math.min((currentTime - lastRender) / 1000, 0.05);
-    lastRender = currentTime;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+// Draw food pellets on the canvas
+let drawFoods = () => {
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
-            if (map[i][j] === 1) {
-                drawRect(j * blockSize, i * blockSize, blockSize, blockSize, wallColor);
+            if (map[i][j] == 2) {
+                createRect(
+                    j * oneBlockSize + oneBlockSize / 3,
+                    i * oneBlockSize + oneBlockSize / 3,
+                    oneBlockSize / 3,
+                    oneBlockSize / 3,
+                    "#FEB897"
+                );
             }
         }
     }
+};
 
-    // اگر پک‌من در مرکز بلاک بود و حرکت به جهت درخواستی ممکن بود، جهت را تغییر بده
-    const { centerX, centerY } = pacman.isCentered();
-    if (
-        ((pendingDirection.x !== 0 && centerY) || (pendingDirection.y !== 0 && centerX)) &&
-        pacman.checkIfCanMove(pendingDirection.x, pendingDirection.y)
-    ) {
-        direction = pendingDirection;
+// Draw remaining lives
+let drawRemainingLives = () => {
+    canvasContext.font = "20px Emulogic";
+    canvasContext.fillStyle = "white";
+    canvasContext.fillText("Lives: ", 220, oneBlockSize * (map.length + 1));
+
+    for (let i = 0; i < lives; i++) {
+        canvasContext.drawImage(
+            pacmanFrames,
+            2 * oneBlockSize,
+            0,
+            oneBlockSize,
+            oneBlockSize,
+            350 + i * oneBlockSize,
+            oneBlockSize * map.length + 2,
+            oneBlockSize,
+            oneBlockSize
+        );
     }
+};
 
-    pacman.draw(ctx);
-    pacman.move(deltaTime, direction);
-}
+// Draw current score
+let drawScore = () => {
+    canvasContext.font = "20px Emulogic";
+    canvasContext.fillStyle = "white";
+    canvasContext.fillText(
+        "Score: " + score,
+        0,
+        oneBlockSize * (map.length + 1)
+    );
+};
+
+// Main draw function
+let draw = () => {
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    createRect(0, 0, canvas.width, canvas.height, "black");
+    drawWalls();
+    drawFoods();
+    drawGhosts();
+    pacman.draw();
+    drawScore();
+    drawRemainingLives();
+};
+
+// Draw walls based on the map
+let drawWalls = () => {
+    for (let i = 0; i < map.length; i++) {
+        for (let j = 0; j < map[0].length; j++) {
+            if (map[i][j] == 1) {
+                createRect(
+                    j * oneBlockSize,
+                    i * oneBlockSize,
+                    oneBlockSize,
+                    oneBlockSize,
+                    "#342DCA"
+                );
+                if (j > 0 && map[i][j - 1] == 1) {
+                    createRect(
+                        j * oneBlockSize,
+                        i * oneBlockSize + wallOffset,
+                        wallSpaceWidth + wallOffset,
+                        wallSpaceWidth,
+                        wallInnerColor
+                    );
+                }
+
+                if (j < map[0].length - 1 && map[i][j + 1] == 1) {
+                    createRect(
+                        j * oneBlockSize + wallOffset,
+                        i * oneBlockSize + wallOffset,
+                        wallSpaceWidth + wallOffset,
+                        wallSpaceWidth,
+                        wallInnerColor
+                    );
+                }
+
+                if (i < map.length - 1 && map[i + 1][j] == 1) {
+                    createRect(
+                        j * oneBlockSize + wallOffset,
+                        i * oneBlockSize + wallOffset,
+                        wallSpaceWidth,
+                        wallSpaceWidth + wallOffset,
+                        wallInnerColor
+                    );
+                }
+
+                if (i > 0 && map[i - 1][j] == 1) {
+                    createRect(
+                        j * oneBlockSize + wallOffset,
+                        i * oneBlockSize,
+                        wallSpaceWidth,
+                        wallSpaceWidth + wallOffset,
+                        wallInnerColor
+                    );
+                }
+            }
+        }
+    }
+};
+
+// Create ghost instances
+let createGhosts = () => {
+    ghosts = [];
+    for (let i = 0; i < ghostCount * 2; i++) {
+        let newGhost = new Ghost(
+            9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+            10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+            oneBlockSize,
+            oneBlockSize,
+            pacman.speed / 2,
+            ghostImageLocations[i % 4].x,
+            ghostImageLocations[i % 4].y,
+            124,
+            116,
+            6 + i
+        );
+        ghosts.push(newGhost);
+    }
+};
 document.addEventListener('DOMContentLoaded', () => {
-    requestAnimationFrame(gameLoop);
+    createNewPacman()
+    createGhosts()
+    gameLoop()
+
+}
+)
+
+
+// Event listener for keyboard input to control Pacman
+window.addEventListener("keydown", (event) => {
+    let k = event.keyCode;
+    setTimeout(() => {
+        if (k == 37 || k == 65) {
+            // left arrow or a
+            pacman.nextDirection = DIRECTION_LEFT;
+        } else if (k == 38 || k == 87) {
+            // up arrow or w
+            pacman.nextDirection = DIRECTION_UP;
+        } else if (k == 39 || k == 68) {
+            // right arrow or d
+            pacman.nextDirection = DIRECTION_RIGHT;
+        } else if (k == 40 || k == 83) {
+            // bottom arrow or s
+            pacman.nextDirection = DIRECTION_BOTTOM;
+        }
+    }, 1);
 });

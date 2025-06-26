@@ -1,108 +1,200 @@
+// const DIRECTION_RIGHT = 4;
+// const DIRECTION_UP = 3;
+// const DIRECTION_LEFT = 2;
+// const DIRECTION_BOTTOM = 1;
+
+// const map = [
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+//     [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+//     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+//     [1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1],
+//     [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+//     [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1],
+//     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+//     [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+//     [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+//     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+// ]
+// let oneBlockSize = 20;
 class Pacman {
-    constructor(x, y, width, height, movePX, blockSize, map) {
+    constructor(x, y, width, height, speed) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.movePX = movePX;
-        this.blockSize = blockSize
-        this.map = map
-        this.image = new Image();
-        this.image.src = "./src/images/Pacman-sprite.png";
-
-        this.totalFrames = 4; // تعداد فریم‌ها
-        this.currentFrame = 0;
-        this.frameDuration = 100; // هر فریم چند میلی‌ثانیه نمایش داده شود
-        this.lastFrameChange = Date.now();
+        this.speed = speed;
+        this.direction = 4;
+        this.nextDirection = 4;
+        this.frameCount = 7;
+        this.currentFrame = 1;
+        setInterval(() => {
+            this.changeAnimation();
+        }, 100);
     }
 
-    updateFrame() {
-        const now = Date.now();
-        if (now - this.lastFrameChange > this.frameDuration) {
-            this.currentFrame = (this.currentFrame + 1) % this.totalFrames;
-            this.lastFrameChange = now;
+    moveProcess() {
+        this.changeDirectionIfPossible();
+        this.moveForwards();
+        if (this.checkCollisions()) {
+            this.moveBackwards();
+            return;
         }
     }
 
-    draw(ctx) {
-        this.updateFrame();
-
-        const spriteWidth = this.image.width / this.totalFrames;
-        const spriteHeight = this.image.height;
-
-        ctx.drawImage(
-            this.image,
-            this.currentFrame * spriteWidth, // sx
-            0, // sy
-            spriteWidth, // sw
-            spriteHeight, // sh
-            this.x, // dx
-            this.y, // dy
-            this.width, // dw
-            this.height // dh
-        );
+    eat() {
+        for (let i = 0; i < map.length; i++) {
+            for (let j = 0; j < map[0].length; j++) {
+                if (
+                    map[i][j] == 2 &&
+                    this.getMapX() == j &&
+                    this.getMapY() == i
+                ) {
+                    map[i][j] = 3;
+                    score++;
+                }
+            }
+        }
     }
 
+    moveBackwards() {
+        switch (this.direction) {
+            case DIRECTION_RIGHT: // Right
+                this.x -= this.speed;
+                break;
+            case DIRECTION_UP: // Up
+                this.y += this.speed;
+                break;
+            case DIRECTION_LEFT: // Left
+                this.x += this.speed;
+                break;
+            case DIRECTION_BOTTOM: // Bottom
+                this.y -= this.speed;
+                break;
+        }
+    }
 
+    moveForwards() {
+        switch (this.direction) {
+            case DIRECTION_RIGHT: // Right
+                this.x += this.speed;
+                break;
+            case DIRECTION_UP: // Up
+                this.y -= this.speed;
+                break;
+            case DIRECTION_LEFT: // Left
+                this.x -= this.speed;
+                break;
+            case DIRECTION_BOTTOM: // Bottom
+                this.y += this.speed;
+                break;
+        }
+    }
 
-    move(deltaTime, direction) {
-        const speed = this.movePX;
-        const moveX = direction.x * speed * deltaTime;
-        const moveY = direction.y * speed * deltaTime;
+    checkCollisions() {
+        let isCollided = false;
+        if (
+            map[parseInt(this.y / oneBlockSize)][
+            parseInt(this.x / oneBlockSize)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize + 0.9999)][
+            parseInt(this.x / oneBlockSize)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize)][
+            parseInt(this.x / oneBlockSize + 0.9999)
+            ] == 1 ||
+            map[parseInt(this.y / oneBlockSize + 0.9999)][
+            parseInt(this.x / oneBlockSize + 0.9999)
+            ] == 1
+        ) {
+            isCollided = true;
+        }
+        return isCollided;
+    }
 
-        if (this.checkIfCanMove(moveX, moveY)) {
-            this.x += moveX;
-            this.y += moveY;
+    checkGhostCollision(ghosts) {
+        for (let i = 0; i < ghosts.length; i++) {
+            let ghost = ghosts[i];
+            if (
+                ghost.getMapX() == this.getMapX() &&
+                ghost.getMapY() == this.getMapY()
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    changeDirectionIfPossible() {
+        if (this.direction == this.nextDirection) return;
+        let tempDirection = this.direction;
+        this.direction = this.nextDirection;
+        this.moveForwards();
+        if (this.checkCollisions()) {
+            this.moveBackwards();
+            this.direction = tempDirection;
         } else {
-            // برخورد با دیوار
-            // console.log("برخورد با دیوار");
+            this.moveBackwards();
         }
     }
-    
-    
 
-    checkIfCanMove(moveX, moveY) {
-        const nextX = this.x + moveX;
-        const nextY = this.y + moveY;
+    getMapX() {
+        let mapX = parseInt(this.x / oneBlockSize);
+        return mapX;
+    }
 
-        const left = nextX;
-        const right = nextX + this.width - 1;
-        const top = nextY;
-        const bottom = nextY + this.height - 1;
+    getMapY() {
+        let mapY = parseInt(this.y / oneBlockSize);
 
-        const topLeft = this.map[Math.floor(top / this.blockSize)]?.[Math.floor(left / this.blockSize)];
-        const topRight = this.map[Math.floor(top / this.blockSize)]?.[Math.floor(right / this.blockSize)];
-        const bottomLeft = this.map[Math.floor(bottom / this.blockSize)]?.[Math.floor(left / this.blockSize)];
-        const bottomRight = this.map[Math.floor(bottom / this.blockSize)]?.[Math.floor(right / this.blockSize)];
+        return mapY;
+    }
 
-        return (
-            topLeft !== 1 &&
-            topRight !== 1 &&
-            bottomLeft !== 1 &&
-            bottomRight !== 1
+    getMapXRightSide() {
+        let mapX = parseInt((this.x * 0.99 + oneBlockSize) / oneBlockSize);
+        return mapX;
+    }
+
+    getMapYRightSide() {
+        let mapY = parseInt((this.y * 0.99 + oneBlockSize) / oneBlockSize);
+        return mapY;
+    }
+
+    changeAnimation() {
+        this.currentFrame =
+            this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
+    }
+
+    draw() {
+        canvasContext.save();
+        canvasContext.translate(
+            this.x + oneBlockSize / 2,
+            this.y + oneBlockSize / 2
         );
+        canvasContext.rotate((this.direction * 90 * Math.PI) / 180);
+        canvasContext.translate(
+            -this.x - oneBlockSize / 2,
+            -this.y - oneBlockSize / 2
+        );
+        canvasContext.drawImage(
+            pacmanFrames,
+            (this.currentFrame - 1) * oneBlockSize,
+            0,
+            oneBlockSize,
+            oneBlockSize,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        );
+        canvasContext.restore();
     }
-    
-    snapToGrid() {
-        this.x = Math.round(this.x / this.blockSize) * this.blockSize;
-        this.y = Math.round(this.y / this.blockSize) * this.blockSize;
-    }
-    
-    
-    isCentered() {
-        const tolerance = 1; // تلورانس برای جلوگیری از گیر افتادن بر اثر اعشار
-
-        const modX = this.x % this.blockSize;
-        const modY = this.y % this.blockSize;
-
-        const centerX = modX < tolerance || this.blockSize - modX < tolerance;
-        const centerY = modY < tolerance || this.blockSize - modY < tolerance;
-
-        return { centerX, centerY };
-    }
-    
-
-
 }
-
-
