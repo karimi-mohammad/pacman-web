@@ -9,6 +9,12 @@
 </head>
 
 <body style="margin: 0; background-color: black;">
+    <div class="options">
+        <label for="cheat">cheat</label><input name="cheat" type="checkbox">
+        <label for="ghosts">ghosts</label><input name="ghosts" type="number" min="0" value="3">
+        <label for="FPS">FPS : affect on game speed</label><input name="FPS" type="number" min="1" value="30">
+        <button onclick="startGame()">start</button>
+    </div>
     <canvas id="canvas" width="500" height="500"></canvas>
     <div style="display:none;">
         <img id="animation" src="animations.gif" width="140" height="20">
@@ -17,6 +23,16 @@
     <script src="./src/scripts/ghost.js"></script>
     <script src="./src/scripts/pacman.js"></script>
     <script src="./src/scripts/game.js"></script>
+    <style>
+        .options {
+            color: white;
+            border: 1px solid green;
+            margin: 2%;
+        }
+        label{
+            margin-left: 2%;
+        }
+    </style>
 </body>
 
 </html>

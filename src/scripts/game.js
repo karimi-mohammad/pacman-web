@@ -23,7 +23,8 @@ let ghostImageLocations = [
     { x: 0, y: 121 },
     { x: 176, y: 121 },
 ];
-
+// Set game interval
+let gameInterval
 // Game state variables
 // Game variables
 let fps = 30;
@@ -49,7 +50,7 @@ let map = [
     [1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 0, 0, 0, 0],
     [1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1],
-    [2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+    [1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 0, 0, 0, 0],
     [0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 0, 0, 0, 0],
@@ -92,12 +93,15 @@ let createNewPacman = () => {
 
 // Main game loop
 let gameLoop = () => {
+    if (score >= 219) {
+        alert("you win")
+        window.location.reload()
+    }
     update();
     draw();
 };
 
-// Set game interval
-let gameInterval = setInterval(gameLoop, 1000 / fps);
+
 
 // Restart Pacman and ghosts after collision or death
 let restartPacmanAndGhosts = () => {
@@ -110,6 +114,8 @@ let onGhostCollision = () => {
     lives--;
     restartPacmanAndGhosts();
     if (lives == 0) {
+        alert("you loose")
+        window.location.reload()
     }
 };
 
@@ -243,7 +249,7 @@ let drawWalls = () => {
 // Create ghost instances
 let createGhosts = () => {
     ghosts = [];
-    for (let i = 0; i < ghostCount * 2; i++) {
+    for (let i = 0; i < ghostCount; i++) {
         let newGhost = new Ghost(
             9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
             10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
@@ -260,12 +266,19 @@ let createGhosts = () => {
     }
 };
 document.addEventListener('DOMContentLoaded', () => {
-    createNewPacman()
-    createGhosts()
-    gameLoop()
 
 }
 )
+
+let startGame = () => {
+    ghostCount = document.getElementsByName("ghosts")[0].value
+    fps = document.getElementsByName("FPS")[0].value
+    // Set game interval
+     gameInterval = setInterval(gameLoop, 1000 / fps);
+    createNewPacman()
+    createGhosts()
+    gameLoop()
+}
 
 
 // Event listener for keyboard input to control Pacman
