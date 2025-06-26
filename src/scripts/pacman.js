@@ -45,19 +45,20 @@ class Pacman {
 
 
 
-    move(deltaTime) {
+    move(deltaTime, direction) {
         const speed = this.movePX;
-        const moving = speed * deltaTime;
-
-        const moveX = moving;
-        const moveY = 0; 
+        const moveX = direction.x * speed * deltaTime;
+        const moveY = direction.y * speed * deltaTime;
 
         if (this.checkIfCanMove(moveX, moveY)) {
             this.x += moveX;
+            this.y += moveY;
         } else {
-            console.log("برخورد با دیوار");
+            // برخورد با دیوار
+            // console.log("برخورد با دیوار");
         }
     }
+    
     
 
     checkIfCanMove(moveX, moveY) {
@@ -82,6 +83,23 @@ class Pacman {
         );
     }
     
+    snapToGrid() {
+        this.x = Math.round(this.x / this.blockSize) * this.blockSize;
+        this.y = Math.round(this.y / this.blockSize) * this.blockSize;
+    }
+    
+    
+    isCentered() {
+        const tolerance = 1; // تلورانس برای جلوگیری از گیر افتادن بر اثر اعشار
+
+        const modX = this.x % this.blockSize;
+        const modY = this.y % this.blockSize;
+
+        const centerX = modX < tolerance || this.blockSize - modX < tolerance;
+        const centerY = modY < tolerance || this.blockSize - modY < tolerance;
+
+        return { centerX, centerY };
+    }
     
 
 

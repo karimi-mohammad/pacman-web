@@ -1,0 +1,31 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #222;
+    overflow: hidden;
+    /* جلوگیری از اسکرول */
+    font-family: Arial, sans-serif;
+    color: white;
+    flex-direction: column;
+}
+
+#canvas {
+    background-color: var(--canvas-bg-color);
+    border: 2px solid var(--wall-color);
+    display: block;
+    /* حذف فضای اضافی زیر canvas */
+    margin-top: 20px;
+}
+
+h1 {
+    color: #fceb92;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.game-info {
+    margin-top: 10px;
+    font-size: 1.2em;
+}
