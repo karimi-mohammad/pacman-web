@@ -55,33 +55,54 @@ class Ghost {
 
 
     moveProcess() {
-        let oldX = this.x;
-        let oldY = this.y;
-
         if (this.isInRange()) {
-            this.target = pacman;
+            const dx = pacman.getMapX();
+            const dy = pacman.getMapY();
+
+            const offsets = [
+                { x: dx + 1, y: dy },
+                { x: dx - 1, y: dy },
+                { x: dx, y: dy + 1 },
+                { x: dx, y: dy - 1 },
+                { x: dx + 1, y: dy + 1 },
+                { x: dx - 1, y: dy - 1 },
+                { x: dx + 1, y: dy - 1 },
+                { x: dx - 1, y: dy + 1 },
+            ];
+
+            let validOffsets = offsets.filter(o => {
+                return (
+                    o.y >= 0 &&
+                    o.y < map.length &&
+                    o.x >= 0 &&
+                    o.x < map[0].length &&
+                    map[o.y][o.x] !== 1
+                );
+            });
+
+            if (validOffsets.length > 0) {
+                const randomOffset = validOffsets[Math.floor(Math.random() * validOffsets.length)];
+                this.target = {
+                    x: randomOffset.x * oneBlockSize,
+                    y: randomOffset.y * oneBlockSize
+                };
+            } else {
+                this.target = pacman;
+            }
+
         } else {
             this.target = randomTargetsForGhosts[this.randomTargetIndex];
         }
 
-        if (this.isCentered()) {
-            this.changeDirectionIfPossible();
-        }
-
+        this.changeDirectionIfPossible();
         this.moveForwards();
 
         if (this.checkCollisions()) {
             this.moveBackwards();
-            this.stuckCounter++;
-            if (this.stuckCounter > 10) {
-                this.changeRandomDirection(); // جهت رو عوض کن شاید آزاد شد
-                this.stuckCounter = 0;
-            }
-        } else {
-            this.stuckCounter = 0;
+            return;
         }
     }
-
+    
 
     changeDirectionIfPossible() {
         if (!this.isCentered()) return; // اگه وسط یه سلول نیست تغییر جهت نده
